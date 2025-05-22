@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <button>
+        <a href="index.html">Volver</a>
+    
+    
+      </button>
+
+   <!-- Lista de productos -->
+    <div id="productos">
+
+        <ul id="listaProductos"></ul> <!-- Cambiado de tabla a ul/li para coincidir con tu JS -->
+
+    </div>
+      </div>
+    
+    
+      
+      <!-- Carrito -->
+      <div id="carrito">
+        <h2>Tu Carrito</h2>
+        <ul id="lista-carrito"></ul>
+        <p id="total-carrito">Total: $0</p>
+        <button onclick="finalizarCompra(1)">Finalizar Compra</button> <!-- Reemplaza "1" con el ID del usuario logueado -->
+      </div>
+      
+      <!-- Scripts -->
+      <script src="js/pedidos/carrito.js"></script>
+      <script src="js/productos/Listar.js"></script>    
+</body>
+
+</html>

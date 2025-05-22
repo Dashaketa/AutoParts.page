@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Productos</title>
+  <link rel="stylesheet" href="styles/usuarios.css">
+</head>
+<body>
+  <h1>Gestión de Productos</h1>
+
+  <button>
+    <a href="index.html">Volver</a>
+
+
+  </button>
+
+  <!-- Formulario (ID actualizado para coincidir con crearProducto.js) -->
+  <form id="formularioProducto" enctype="multipart/form-data">
+    <input type="hidden" id="productoId">
+    <input type="text" name="nombre" placeholder="Nombre" required>
+    <input type="text" name="marca" placeholder="Marca" required>
+    <input type="text" name="descripcion" placeholder="Descripción" required>
+    <input type="number" name="precio" placeholder="Precio" required step="0.01">
+    <input type="number" name="stock" placeholder="Stock" required>
+    <input type="text" name="categoria" placeholder="Categoría" required>
+    <input type="file" name="imagen" accept="image/*">
+    <button type="submit">CREAR</button>
+  </form>
+
+  <!-- Lista de productos (ID actualizado para listarProductos.js) -->
+  <ul id="listaProductos"></ul> <!-- Cambiado de tabla a ul/li para coincidir con tu JS -->
+
+  <!-- Scripts (agregamos defer para evitar errores de DOM) -->
+  <script src="js/productos/manejoProductos.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+body {
+margin: 0;
+padding: 0;
+@apply bg-white bg-[radial-gradient(100%_50%_at_50%_0%,rgba(0,163,255,0.13)_0,rgba(0,163,255,0)_50%,rgba(0,163,255,0)_100%)];
+font-family: 'Roboto', sans-serif;
+}

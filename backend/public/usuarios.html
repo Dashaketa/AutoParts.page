@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/usuarios.css">
+    <title>Usuario</title>
+</head>
+<body>
+  <button>
+    <a href="index.html">Volver</a>
+
+
+  </button>
+  <h1>Gestión de Usuarios     
+  </h1>
+
+  
+  <!-- Formulario para agregar usuarios -->
+  <form id="formUsuario">
+    <h2>Agregar Usuario</h2>
+    <input type="text" id="nombre" placeholder="Nombre" required><br>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="contraseña" placeholder="Contraseña" required><br>
+    <select id="rol" required>
+      <option value="" disabled selected>Selecciona un rol</option>
+      <option value="cliente">Cliente</option>
+      <option value="clienteMayorista">Cliente Mayorista</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <br>
+    <br>
+    <br>
+    <button type="submit">Guardar</button>
+   
+
+  </form>
+
+
+      <!-- Tabla para mostrar usuarios -->
+  <table id="tablaUsuarios">
+    <h1>usuarios</h1>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th> <!-- Nueva columna -->
+        <th>Fecha Registro</th>
+        <th>Acciones</th> <!-- ← nueva columna -->
+
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <script src="js/Usuario/crearUsuarios.js"></script>
+  <script src="js/Usuario/listarUsuarios.js"></script>
+
+</body>
+
+</html>

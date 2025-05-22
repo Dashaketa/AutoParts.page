@@ -1,0 +1,332 @@
+productoRoutes.js:
+const express = require('express');
+const router = express.Router();
+const productoController = require('../controllers/productoController');
+const { upload } = require('../middleware/upload');
+
+// Crear producto
+router.post('/', upload.single('imagen'), productoController.crearProducto);
+
+// Listar productos
+router.get('/', productoController.getProductos);
+
+// Eliminar producto
+router.delete('/:id', productoController.eliminarProducto);
+
+// Actualizar producto
+router.put('/:id', upload.single('imagen'), productoController.actualizarProducto);
+
+module.exports = router;
+
+models/producto.js: 
+const pool = require('../config/db');
+
+const Producto = {
+  // Crear un producto
+  crear: async ({ nombre, descripcion, precio, stock, categoria, imagen }) => {
+    const sql = `
+      INSERT INTO productos (nombre, descripcion, precio, stock, categoria, imagen)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const [result] = await pool.query(sql, [nombre, descripcion, precio, stock, categoria, imagen]);
+    return { id: result.insertId, nombre, descripcion, precio, stock, categoria, imagen };
+  },
+
+  // Obtener todos los productos
+  obtenerTodos: async () => {
+    const [rows] = await pool.query('SELECT * FROM productos');
+    return rows;
+  },
+
+  // Eliminar producto por ID
+  eliminar: async (id) => {
+    const [result] = await pool.query('DELETE FROM productos WHERE id = ?', [id]);
+    return result.affectedRows > 0;
+  }
+};
+
+module.exports = Producto;
+
+middleware/upload.js:
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'uploads'),
+  filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+});
+
+const upload = multer({ storage });
+
+module.exports = { upload };
+
+controllers/productoController.js:
+const pool = require('../config/db');
+const path = require('path');
+const fs = require('fs');
+
+// Crear un producto
+exports.crearProducto = async (req, res) => {
+  try {
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
+    const imagen = req.file ? req.file.filename : null;
+
+    const [result] = await pool.query(
+      'INSERT INTO productos (nombre, descripcion, precio, stock, categoria, imagen) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, descripcion, precio, stock, categoria, imagen]
+    );
+
+    res.status(201).json({ id: result.insertId, mensaje: 'Producto creado correctamente' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al crear producto');
+  }
+};
+
+// Obtener todos los productos
+exports.getProductos = async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM productos');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al obtener productos');
+  }
+};
+
+// Eliminar un producto
+exports.eliminarProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Obtener imagen para eliminar del sistema de archivos
+    const [rows] = await pool.query('SELECT imagen FROM productos WHERE id = ?', [id]);
+    if (rows.length === 0) return res.status(404).send('Producto no encontrado');
+
+    const imagen = rows[0].imagen;
+    if (imagen) {
+      const ruta = path.join(__dirname, '..', 'uploads', imagen);
+      if (fs.existsSync(ruta)) fs.unlinkSync(ruta);
+    }
+
+    await pool.query('DELETE FROM productos WHERE id = ?', [id]);
+    res.send('Producto eliminado');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al eliminar producto');
+  }
+};
+
+// Actualizar un producto
+exports.actualizarProducto = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
+
+    // Obtener el producto actual
+    const [rows] = await pool.query('SELECT * FROM productos WHERE id = ?', [id]);
+    if (rows.length === 0) return res.status(404).send('Producto no encontrado');
+
+    const productoActual = rows[0];
+    let nuevaImagen = productoActual.imagen;
+
+    // Si se sube una nueva imagen
+    if (req.file) {
+      // Eliminar imagen anterior
+      if (productoActual.imagen) {
+        const rutaAnterior = path.join(__dirname, '..', 'uploads', productoActual.imagen);
+        if (fs.existsSync(rutaAnterior)) fs.unlinkSync(rutaAnterior);
+      }
+      nuevaImagen = req.file.filename;
+    }
+
+    await pool.query(
+      'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, stock = ?, categoria = ?, imagen = ? WHERE id = ?',
+      [nombre, descripcion, precio, stock, categoria, nuevaImagen, id]
+    );
+
+    res.send('Producto actualizado');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al actualizar producto');
+  }
+};
+
+public/js/crearProducto
+document.getElementById('formularioProducto').addEventListener('submit', async function (e) {
+    e.preventDefault();
+  
+    const formData = new FormData(this);
+  
+    try {
+      const response = await fetch('/productos', {
+        method: 'POST',
+        body: formData
+      });
+  
+      if (response.ok) {
+        alert('Producto creado correctamente');
+        this.reset();
+        obtenerProductos();
+      } else {
+        const error = await response.text();
+        alert(`Error al crear producto: ${error}`);
+      }
+    } catch (err) {
+      alert(`Error de red: ${err.message}`);
+    }
+  });
+  
+
+public/js/listarProducto
+async function obtenerProductos() {
+    try {
+      const res = await fetch('/productos');
+      const productos = await res.json();
+  
+      const lista = document.getElementById('listaProductos');
+      lista.innerHTML = '';
+  
+      productos.forEach(producto => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${producto.nombre}</strong><br>
+          <img src="/uploads/${producto.imagen}" alt="${producto.nombre}" width="100"><br>
+          Precio: $${producto.precio} | Stock: ${producto.stock} | Categoría: ${producto.categoria}<br>
+          <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
+          <button onclick="cargarFormularioEdicion(${producto.id})">Editar</button>
+          <hr>
+        `;
+        lista.appendChild(li);
+      });
+    } catch (err) {
+      alert('Error al obtener productos');
+    }
+  }
+  
+  window.addEventListener('DOMContentLoaded', obtenerProductos);
+
+  async function eliminarProducto(id) {
+    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+  
+    try {
+      const res = await fetch(`/productos/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        alert('Producto eliminado');
+        obtenerProductos();
+      } else {
+        const error = await res.text();
+        alert(`Error al eliminar: ${error}`);
+      }
+    } catch (err) {
+      alert(`Error de red: ${err.message}`);
+    }
+  }
+  
+  
+public/js/editarProducto
+let idProductoActual = null;
+
+function cargarFormularioEdicion(id) {
+  fetch(`/productos`)
+    .then(res => res.json())
+    .then(productos => {
+      const producto = productos.find(p => p.id === id);
+      if (producto) {
+        document.getElementById('nombre').value = producto.nombre;
+        document.getElementById('descripcion').value = producto.descripcion;
+        document.getElementById('precio').value = producto.precio;
+        document.getElementById('stock').value = producto.stock;
+        document.getElementById('categoria').value = producto.categoria;
+        idProductoActual = producto.id;
+      }
+    });
+}
+
+document.getElementById('formularioProducto').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const method = idProductoActual ? 'PUT' : 'POST';
+  const url = idProductoActual ? `/productos/${idProductoActual}` : '/productos';
+
+  try {
+    const response = await fetch(url, {
+      method,
+      body: formData
+    });
+
+    if (response.ok) {
+      alert(idProductoActual ? 'Producto actualizado' : 'Producto creado');
+      this.reset();
+      idProductoActual = null;
+      obtenerProductos();
+    } else {
+      const error = await response.text();
+      alert(`Error: ${error}`);
+    }
+  } catch (err) {
+    alert(`Error de red: ${err.message}`);
+  }
+});
+
+
+
+Rutas:
+
+(-config:
+  db.js)
+
+(-controllers:
+  pedidoController.js
+  productoController.js
+  usuarioController.js)
+
+(-middleware:
+  upload.js)
+
+(-models:
+  pedido.js
+  producto.js
+  usuario.js)
+
+(-node_modules:)
+
+(-public:
+  -js:
+    -pedidos:
+      carrito.js
+
+    -productos:
+      Listar.js 
+      manejoProductos.js
+
+    -Usuario:
+      crearUsuarios.js
+      listarUsuarios.js
+
+
+-styles:
+  usuarios.css
+
+catalogo.html index.html
+producto.html
+usuarios.html)
+
+(-routes:
+
+  pedidoRoutes.js
+
+  productoRoutes.js
+
+  usuarioRoutes.js)
+
+(-uploads:)
+
+.env
+app.js
+archivo.txt
+package-lock.json
+package.json
+server.js
+
