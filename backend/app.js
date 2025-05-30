@@ -16,11 +16,24 @@ const carritoRoutes = require('./routes/carritoRoutes');
 const app = express();
 
 // 1) Habilitar CORS (modo abierto)
+// 1) Habilitar CORS (soporta frontend minorista y mayorista)
+const allowedOrigins = [
+  'http://localhost:5173', // minorista
+  'http://localhost:4000', // mayorista (o el puerto que uses)
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',       // tu frontend Vite
+  origin: function (origin, callback) {
+    // Permitir sin problema en llamadas como Postman o backend interno
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
 }));
+
 
 const session = require('express-session');
 

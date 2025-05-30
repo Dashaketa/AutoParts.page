@@ -1,22 +1,21 @@
-// src/components/admin/EditarProducto.jsx
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import api from '../../services/api'
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 export default function EditarProducto() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [form, setForm] = useState(null)
-  const [file, setFile] = useState(null)
-  const [error, setError] = useState('')
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [form, setForm] = useState(null);
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    ;(async () => {
+    (async () => {
       try {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('token');
         const { data } = await api.get(`/productos/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
-        })
+        });
         setForm({
           nombre: data.nombre,
           marca: data.marca,
@@ -25,46 +24,47 @@ export default function EditarProducto() {
           precio: data.precio,
           stock: data.stock,
           peso: data.peso,
-          costo_precio: data.costo_precio
-        })
+          costo_precio: data.costo_precio,
+          precio_mayorista: data.precio_mayorista
+        });
       } catch {
-        setError('Error al cargar producto')
+        setError('Error al cargar producto');
       }
-    })()
-  }, [id])
+    })();
+  }, [id]);
 
-  const handleChange = e => {
-    const { name, value } = e.target
-    setForm(f => ({ ...f, [name]: value }))
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
-  const handleFile = e => {
+  const handleFile = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0])
+      setFile(e.target.files[0]);
     }
-  }
+  };
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-    const data = new FormData()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData();
     Object.entries(form).forEach(([key, val]) => {
-      data.append(key, val)
-    })
-    if (file) data.append('imagen', file)
+      data.append(key, val);
+    });
+    if (file) data.append('imagen', file);
 
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token');
       await api.put(`/productos/${id}`, data, {
         headers: { Authorization: `Bearer ${token}` }
-      })
-      alert('Producto actualizado correctamente')
-      navigate('/admin/productos')
+      });
+      alert('Producto actualizado correctamente');
+      navigate('/admin/productos');
     } catch {
-      setError('Error al actualizar producto')
+      setError('Error al actualizar producto');
     }
-  }
+  };
 
-  if (!form) return <p className="text-center">Cargando...</p>
+  if (!form) return <p className="text-center">Cargando...</p>;
 
   return (
     <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
@@ -108,10 +108,21 @@ export default function EditarProducto() {
             type="number"
             value={form.precio}
             onChange={handleChange}
-            placeholder="Precio (venta)"
+            placeholder="Precio (venta sin IVA)"
             className="w-full border px-3 py-2 rounded"
             required
           />
+          <input
+            name="precio_mayorista"
+            type="number"
+            value={form.precio_mayorista}
+            onChange={handleChange}
+            placeholder="Precio mayorista"
+            className="w-full border px-3 py-2 rounded"
+            required
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
           <input
             name="costo_precio"
             type="number"
@@ -121,8 +132,6 @@ export default function EditarProducto() {
             className="w-full border px-3 py-2 rounded"
             required
           />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
           <input
             name="stock"
             type="number"
@@ -132,16 +141,16 @@ export default function EditarProducto() {
             className="w-full border px-3 py-2 rounded"
             required
           />
-          <input
-            name="peso"
-            type="number"
-            step="0.01"
-            value={form.peso}
-            onChange={handleChange}
-            placeholder="Peso (kg)"
-            className="w-full border px-3 py-2 rounded"
-          />
         </div>
+        <input
+          name="peso"
+          type="number"
+          step="0.01"
+          value={form.peso}
+          onChange={handleChange}
+          placeholder="Peso (kg)"
+          className="w-full border px-3 py-2 rounded"
+        />
         <div>
           <label className="block text-sm mb-1">Nueva Imagen</label>
           <input
@@ -159,5 +168,5 @@ export default function EditarProducto() {
         </button>
       </form>
     </div>
-  )
+  );
 }

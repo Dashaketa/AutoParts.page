@@ -27,4 +27,8 @@ router.put("/pedidos/:pedidoId", ctrl.actualizarPedido);
 // DELETE /api/pedidos/:pedidoId
 router.delete("/pedidos/:pedidoId", ctrl.eliminarPedido);
 
+// Generar PDF de un pedido
+router.get('/pdf/:id', ctrl.generarPedidoPDF);
+
+
 module.exports = router;

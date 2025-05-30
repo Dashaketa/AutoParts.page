@@ -46,9 +46,7 @@ export default function Dashboard() {
     <>
     <div>
 
-      <h1 className="text-4xl font-semibold text-[#273043] mb-12 text-center">
-        Bienvenido, {usuario.nombre}
-      </h1>
+     
       <Cart
         cartItems={cartItems}
         total={total}

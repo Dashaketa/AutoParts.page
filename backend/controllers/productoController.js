@@ -1,4 +1,3 @@
-// src/controllers/productoController.js
 const pool = require('../config/db');
 const path = require('path');
 const fs = require('fs');
@@ -6,12 +5,12 @@ const fs = require('fs');
 // Crear un producto
 exports.crearProducto = async (req, res) => {
   try {
-    const { nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio } = req.body;
+    const { nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista } = req.body;
     const imagen = req.file ? req.file.filename : null;
 
     const [result] = await pool.query(
-      'INSERT INTO productos (nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, imagen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, imagen]
+      'INSERT INTO productos (nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista, imagen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista, imagen]
     );
 
     res.status(201).json({ id: result.insertId, mensaje: 'Producto creado correctamente' });
@@ -21,11 +20,18 @@ exports.crearProducto = async (req, res) => {
   }
 };
 
-// Obtener todos los productos
+// Obtener todos los productos con precio con IVA
 exports.getProductos = async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM productos');
-    res.json(rows);
+
+    // Agregar campo calculado `precio_con_iva`
+    const productos = rows.map(p => ({
+      ...p,
+      precio_con_iva: Math.round(p.precio * 1.19)
+    }));
+
+    res.json(productos);
   } catch (err) {
     console.error(err);
     res.status(500).send('Error al obtener productos');
@@ -53,7 +59,7 @@ exports.getProductoById = async (req, res) => {
 exports.actualizarProducto = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio } = req.body;
+    const { nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista } = req.body;
 
     const [rows] = await pool.query('SELECT * FROM productos WHERE id = ?', [id]);
     if (rows.length === 0) return res.status(404).send('Producto no encontrado');
@@ -70,8 +76,8 @@ exports.actualizarProducto = async (req, res) => {
     }
 
     await pool.query(
-      'UPDATE productos SET nombre = ?, marca = ?, descripcion = ?, precio = ?, stock = ?, categoria = ?, peso = ?, costo_precio = ?, imagen = ? WHERE id = ?',
-      [nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, nuevaImagen, id]
+      'UPDATE productos SET nombre = ?, marca = ?, descripcion = ?, precio = ?, stock = ?, categoria = ?, peso = ?, costo_precio = ?, precio_mayorista = ?, imagen = ? WHERE id = ?',
+      [nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista, nuevaImagen, id]
     );
 
     res.send('Producto actualizado');
@@ -121,11 +127,12 @@ exports.crearProductosMasivos = async (req, res) => {
       p.categoria,
       parseFloat(p.peso),
       parseInt(p.costo_precio),
+      parseInt(p.precio_mayorista),
       null // imagen opcional
     ]);
 
     const sql = `
-      INSERT INTO productos (nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, imagen)
+      INSERT INTO productos (nombre, marca, descripcion, precio, stock, categoria, peso, costo_precio, precio_mayorista, imagen)
       VALUES ?
     `;
 

@@ -1,5 +1,7 @@
 // src/controllers/pedidoController.js
 const pool = require("../config/db");
+const PDFDocument = require('pdfkit');
+
 
 // Crear nuevo pedido
 exports.crearPedido = async (req, res) => {
@@ -184,5 +186,113 @@ exports.eliminarPedido = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Error interno al cancelar el pedido" });
+  }
+};
+
+
+// Generar PDF del pedido
+exports.generarPedidoPDF = async (req, res) => {
+  const pedidoId = req.params.id;
+
+  try {
+    // Obtener cabecera del pedido
+    const [pedidoRows] = await pool.query(`
+      SELECT p.id, p.fecha_pedido, p.estado, u.nombre AS cliente_nombre, u.email
+      FROM pedidos p
+      JOIN usuarios u ON p.usuario_id = u.id
+      WHERE p.id = ?
+    `, [pedidoId]);
+
+    if (pedidoRows.length === 0) {
+      return res.status(404).send('Pedido no encontrado');
+    }
+
+    const pedido = pedidoRows[0];
+
+    // Obtener detalles
+    const [detalles] = await pool.query(`
+      SELECT d.*, pr.nombre, pr.marca, pr.descripcion, pr.imagen
+      FROM detalles_pedido d
+      JOIN productos pr ON d.producto_id = pr.id
+      WHERE d.pedido_id = ?
+    `, [pedidoId]);
+
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument({ margin: 50 });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename=pedido.pdf');
+    doc.pipe(res);
+
+    // Encabezado
+    doc
+      .fillColor('#273043')
+      .fontSize(24)
+      .text(`Cotizacion#${pedido.id}`, { align: 'center' });
+
+    doc.moveDown();
+    doc
+      .fontSize(12)
+      .fillColor('black')
+      .text(`Cliente: ${pedido.cliente_nombre}`, { continued: true })
+      .text(`  (${pedido.email})`);
+
+    doc.text(`Fecha: ${new Date(pedido.fecha_pedido).toLocaleDateString()}`);
+    doc.text(`Estado: ${pedido.estado}`);
+    doc.moveDown(1.5);
+
+    // Línea divisoria
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .strokeColor('#cccccc')
+      .lineWidth(1)
+      .stroke();
+
+    doc.moveDown(1);
+
+    // Tabla de productos
+    let total = 0;
+    detalles.forEach((item, index) => {
+      const subtotal = item.precio_unitario * item.cantidad;
+      total += subtotal;
+
+      doc
+        .fontSize(14)
+        .fillColor('#1789FC')
+        .text(`${item.nombre} - ${item.marca}`, { underline: true });
+
+      doc
+        .fontSize(11)
+        .fillColor('black')
+        .text(`Descripción: ${item.descripcion}`)
+        .text(`Cantidad: ${item.cantidad} x $${item.precio_unitario.toLocaleString()}`)
+        .text(`Subtotal: $${subtotal.toLocaleString()}`)
+        .moveDown(1);
+
+      // Línea separadora
+      if (index < detalles.length - 1) {
+        doc
+          .moveTo(doc.page.margins.left, doc.y)
+          .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+          .strokeColor('#e0e0e0')
+          .lineWidth(0.5)
+          .stroke();
+
+        doc.moveDown();
+      }
+    });
+
+    // Total
+    doc.moveDown(2);
+    doc
+      .fontSize(16)
+      .fillColor('#273043')
+      .text(`TOTAL: $${total.toLocaleString()}`, { align: 'right', underline: true });
+
+    doc.end();
+  } catch (err) {
+    console.error('Error al generar PDF:', err.message);
+    res.status(500).send('Error interno al generar el PDF');
   }
 };
