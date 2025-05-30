@@ -11,6 +11,7 @@ const productoRoutes  = require('./routes/productoRoutes');
 const pedidoRoutes    = require('./routes/pedidoRoutes');
 const authRoutes      = require('./routes/authRoutes');
 const carritoRoutes = require('./routes/carritoRoutes');
+const carritoTemporalRoutes = require('./routes/carritoTemporalRoutes');
 
 
 const app = express();
@@ -68,6 +69,7 @@ app.use('/productos', productoRoutes);
 app.use('/pedido',    pedidoRoutes);
 app.use('/auth',     authRoutes);
 app.use('/carrito', carritoRoutes);
+app.use('/carrito-temporal', carritoTemporalRoutes);
 
 
 // 7) Ruta raíz de prueba

@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
@@ -23,6 +22,7 @@ import EditarProducto from "./components/admin/EditarProducto";
 import SingleOrder from "./components/dashboard/SingleOrder";
 import PaymentSuccess from "./pages/PaymentSucces";
 import PaymentFail from "./pages/PaymentFail";
+import Checkout from "./pages/CheckOut";
 
 const RutaPrivada = ({ children }) => {
   const { usuario } = useContext(AuthContext);
@@ -36,12 +36,24 @@ export default function App() {
       <Navbar />
 
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/producto/:id" element={<ProductoDetalle />} />
         <Route path="/catalogo" element={<Catalogo />} />
 
+        {/* Ruta checkout independiente y protegida */}
+        <Route
+          path="/checkout"
+          element={
+            <RutaPrivada>
+              <Checkout />
+            </RutaPrivada>
+          }
+        />
+
+        {/* Rutas admin protegidas */}
         <Route
           path="/admin/*"
           element={
@@ -57,7 +69,7 @@ export default function App() {
           <Route path="usuarios" element={<AdminUsuarios />} />
         </Route>
 
-        {/** Dashboard **/}
+        {/* Dashboard usuario */}
         <Route
           path="/dashboard"
           element={
@@ -67,7 +79,7 @@ export default function App() {
           }
         />
 
-        {/** Single Order **/}
+        {/* Detalle de pedido */}
         <Route
           path="/orders/:orderId"
           element={
@@ -77,10 +89,11 @@ export default function App() {
           }
         />
 
-                 {/* Páginas de resultado de pago */}
+        {/* Resultados de pago */}
         <Route path="/payment/success" element={<PaymentSuccess />} />
-        <Route path="/payment/fail"    element={<PaymentFail   />} />
+        <Route path="/payment/fail" element={<PaymentFail />} />
 
+        {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
 
