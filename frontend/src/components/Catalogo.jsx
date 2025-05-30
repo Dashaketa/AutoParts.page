@@ -1,20 +1,21 @@
-// src/components/Catalogo.jsx
 import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { SearchContext } from "../context/SearchContext";
 import { CartContext } from "../context/CartContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Catalogo() {
   const { usuario } = useContext(AuthContext);
-  const { terminoBusqueda } = useContext(SearchContext);
+  const { terminoBusqueda, setTerminoBusqueda } = useContext(SearchContext);
   const { addToCart } = useContext(CartContext);
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,7 +61,10 @@ export default function Catalogo() {
       quantity: 1,
       image: producto.imagen,
     });
-    alert("Producto agregado al carrito");
+
+    // Mostrar toast
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const brands = Array.from(new Set(productos.map((p) => p.marca))).filter(Boolean);
@@ -70,31 +74,59 @@ export default function Catalogo() {
     if (
       terminoBusqueda &&
       !p.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase())
-    ) return false;
+    )
+      return false;
     if (selectedBrands.length > 0 && !selectedBrands.includes(p.marca)) return false;
-    if (selectedCategories.length > 0 && !selectedCategories.includes(p.categoria)) return false;
+    if (selectedCategories.length > 0 && !selectedCategories.includes(p.categoria))
+      return false;
     return true;
   });
 
-  if (loading) return <p className="text-center text-lg text-gray-700">Cargando productos...</p>;
+  if (loading)
+    return (
+      <p className="text-center text-lg text-gray-700">Cargando productos...</p>
+    );
   if (error) return <p className="text-center text-lg text-red-600">{error}</p>;
 
   return (
-    <div className="bg-gray-50 py-12 sm:py-16">
+    <div className="bg-gray-50 py-12 sm:py-16 relative">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <h2 className="text-center text-4xl font-semibold text-[#273043] mb-8">
+        <h2 className="text-center text-4xl font-semibold text-[#273043] mb-4">
           Catálogo de Productos
         </h2>
+
+        {/* Barra de búsqueda */}
+        <div className="max-w-xs mx-auto mb-8">
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            value={terminoBusqueda}
+            onChange={(e) => setTerminoBusqueda(e.target.value)}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-[#1789FC]"
+          />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filtros */}
           <aside className="space-y-6">
-            <div>
-              <h3 className="font-semibold mb-2">Marcas</h3>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Filtros</h2>
+
+            {/* Marcas */}
+            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-4">
+              <h3
+                className="sticky top-0 bg-white px-3 py-2 mb-3 font-semibold text-gray-700 shadow-sm rounded-t-lg z-10"
+                style={{ borderBottom: "1px solid #e5e7eb" }}
+              >
+                Marcas
+              </h3>
               {brands.map((brand) => (
-                <label key={brand} className="flex items-center mb-1 text-sm">
+                <label
+                  key={brand}
+                  className="flex items-center mb-2 text-sm cursor-pointer hover:text-[#1789FC] transition"
+                >
                   <input
                     type="checkbox"
-                    className="mr-2"
+                    className="mr-3 rounded border-gray-300 focus:ring-[#1789FC]"
                     checked={selectedBrands.includes(brand)}
                     onChange={() => toggleBrand(brand)}
                   />
@@ -102,13 +134,23 @@ export default function Catalogo() {
                 </label>
               ))}
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">Categorías</h3>
+
+            {/* Categorías */}
+            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-4">
+              <h3
+                className="sticky top-0 bg-white px-3 py-2 mb-3 font-semibold text-gray-700 shadow-sm rounded-t-lg z-10"
+                style={{ borderBottom: "1px solid #e5e7eb" }}
+              >
+                Categorías
+              </h3>
               {categories.map((cat) => (
-                <label key={cat} className="flex items-center mb-1 text-sm">
+                <label
+                  key={cat}
+                  className="flex items-center mb-2 text-sm cursor-pointer hover:text-[#1789FC] transition"
+                >
                   <input
                     type="checkbox"
-                    className="mr-2"
+                    className="mr-3 rounded border-gray-300 focus:ring-[#1789FC]"
                     checked={selectedCategories.includes(cat)}
                     onChange={() => toggleCategory(cat)}
                   />
@@ -121,7 +163,9 @@ export default function Catalogo() {
           {/* Productos */}
           <main className="lg:col-span-3">
             {productosFiltrados.length === 0 ? (
-              <p className="text-center text-lg text-gray-500">No se encontraron productos.</p>
+              <p className="text-center text-lg text-gray-500">
+                No se encontraron productos.
+              </p>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
                 {productosFiltrados.map((producto) => {
@@ -184,6 +228,21 @@ export default function Catalogo() {
           </main>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-6 right-6 bg-[#1789FC] text-white px-4 py-3 rounded-lg shadow-lg z-50"
+          >
+            ¡Producto agregado al carrito!
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

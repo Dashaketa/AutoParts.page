@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import InfoGrid from '../components/home/InfoGrid';
@@ -17,6 +16,13 @@ const sectionVariants = {
       ease: [0.16, 1, 0.3, 1],
     },
   }),
+};
+
+const scrollToBento0 = () => {
+  const el = document.getElementById('bento-0');
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth' });
+  }
 };
 
 export default function Home() {
@@ -64,12 +70,27 @@ export default function Home() {
             </Link>
           </motion.div>
         </div>
+        {/* Flecha clickeable */}
         <motion.div
-          className="absolute bottom-8 text-blue-600"
+          className="absolute bottom-8 text-blue-600 cursor-pointer"
           animate={{ y: [0, 12, 0] }}
           transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+          onClick={scrollToBento0}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') scrollToBento0();
+          }}
+          aria-label="Ir a sección Conoce nuestra esencia y compromiso"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-8 h-8 mx-auto"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </motion.div>
@@ -85,6 +106,7 @@ export default function Home() {
         ].map(({ id, title, Comp, bg }) => (
           <motion.section
             key={id}
+            id={id === 0 ? 'bento-0' : undefined}
             className={`py-20 ${bg}`}
             initial="hidden"
             whileInView="visible"

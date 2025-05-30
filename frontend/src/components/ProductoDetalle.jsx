@@ -3,6 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProductoDetalle() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ export default function ProductoDetalle() {
   const { addToCart } = useContext(CartContext);
   const [producto, setProducto] = useState(null);
   const [error, setError] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     const fetchDetalle = async () => {
@@ -45,7 +47,8 @@ export default function ProductoDetalle() {
       image: producto.imagen,
     });
 
-    alert("Producto agregado al carrito");
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   if (error)
@@ -59,7 +62,7 @@ export default function ProductoDetalle() {
       : producto.precio_con_iva;
 
   return (
-    <div className="bg-gray-50 py-24 sm:py-32">
+    <div className="bg-gray-50 py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <button
           onClick={() => navigate("/catalogo")}
@@ -99,6 +102,21 @@ export default function ProductoDetalle() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.3 }}
+            className="fixed bottom-6 right-6 bg-[#1789FC] text-white px-4 py-3 rounded-lg shadow-lg z-50"
+          >
+            ¡Producto agregado al carrito!
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
