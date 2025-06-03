@@ -72,12 +72,10 @@ export default function Dashboard() {
           transition={{ delay: 0.2 }}
           className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100"
         >
-          <div className="bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] px-6 py-4">
+          <div className="bg-gradient-to-r from-[#021186] to-[#0d81a8] px-6 py-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Carrito de Compras</h2>
-              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
-                {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
-              </span>
+              
             </div>
           </div>
           <div className="p-6">

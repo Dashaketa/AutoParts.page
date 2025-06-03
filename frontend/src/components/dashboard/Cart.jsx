@@ -32,7 +32,7 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               <div className="bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white">Tu Carrito</h2>
+                  <h2 className="text-xl font-bold text-white">Productos Seleccionados</h2>
                   <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
                     {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
                   </span>
@@ -120,7 +120,7 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
 <div className="h-full">
   <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full flex flex-col">
     <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
-      <h2 className="text-xl font-bold text-white">Resumen de Compra</h2>
+      <h2 className="text-xl font-bold text-white">Detalles de Pago</h2>
     </div>
 
     {/* Contenido centrado */}
