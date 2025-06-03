@@ -42,7 +42,7 @@ export default function AdminPedidos() {
   ];
 
   return (
-    <div className="bg-[#EFF6EE] min-h-screen p-8">
+    <div className="bg-transparent min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-bold text-[#273043] mb-6 text-center">
           Administración de Pedidos

@@ -1,6 +1,7 @@
 // src/components/dashboard/Cart.jsx
 import React, { useEffect, useState } from 'react';
-import CheckoutButton from './CheckoutButton'; // <-- importamos
+import CheckoutButton from './CheckoutButton';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
   const [displayTotal, setDisplayTotal] = useState(0);
@@ -23,74 +24,123 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
   }, [total]);
 
   return (
-    <div className="bg-gray-50 py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-3 items-stretch">
-          {/* Carrito items */}
-          <div className="relative lg:col-span-2 h-full">
-            <div className="absolute inset-px rounded-2xl bg-white"></div>
-            <div className="relative overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5 p-6 flex flex-col space-y-6 h-full">
-              <h2 className="text-2xl font-semibold text-[#273043]">Tu Carrito</h2>
-              {cartItems.length === 0 ? (
-                <p className="text-gray-500">Tu carrito está vacío.</p>
-              ) : (
-                <div className="grid gap-4 overflow-auto">
-                  {cartItems.map(item => (
-                    <div
-                      key={item.id}
-                      className="group relative bg-white rounded-xl shadow-sm overflow-hidden transform transition duration-300 hover:shadow-lg hover:scale-105"
+    <div className="py-8 sm:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Carrito items - Ocupa 2/3 en pantallas grandes */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white">Tu Carrito</h2>
+                  <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
+                    {cartItems.length} {cartItems.length === 1 ? 'producto' : 'productos'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-6 max-h-[520px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <AnimatePresence>
+                  {cartItems.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12"
                     >
-                      <div className="flex items-center gap-4 p-4">
-                        <img
-                          src={`http://localhost:3000/uploads/${item.image}`}
-                          alt={item.name}
-                          className="w-20 h-20 object-contain"
-                        />
-                        <div className="flex-1">
-                          <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-                          <div className="mt-2 flex items-center gap-2">
-                            <label className="text-sm text-gray-600">Cant:</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={item.quantity}
-                              onChange={e => onUpdateQuantity(item.id, parseInt(e.target.value, 10))}
-                              className="w-16 text-center border rounded focus:outline-none focus:ring-2 focus:ring-[#1789FC]"
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <h3 className="mt-4 text-xl font-medium text-gray-700">Tu carrito está vacío</h3>
+                      <p className="mt-2 text-gray-500">Agrega productos para continuar</p>
+                    </motion.div>
+                  ) : (
+                    <div className="space-y-4">
+                      {cartItems.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ delay: index * 0.05, duration: 0.3 }}
+                          className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl transition-all duration-300 hover:shadow-md"
+                        >
+                          <div className="flex-shrink-0">
+                            <img
+                              src={`http://localhost:3000/uploads/${item.image}`}
+                              alt={item.name}
+                              className="w-20 h-20 object-contain rounded-lg bg-white p-2 border border-gray-200"
                             />
                           </div>
-                          <p className="mt-2 text-[#1789FC] font-semibold">
-                            ${(item.quantity * item.price).toLocaleString()}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => onRemove(item.id)}
-                          className="text-red-500 hover:text-red-700 transform transition hover:scale-110 text-xl"
-                        >
-                          &times;
-                        </button>
-                      </div>
+
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
+
+                            <div className="mt-3 flex items-center">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-600">Cantidad:</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={e => onUpdateQuantity(item.id, parseInt(e.target.value, 10))}
+                                  className="w-16 px-2 py-1 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                              </div>
+
+                              <button
+                                onClick={() => onRemove(item.id)}
+                                className="ml-auto text-gray-400 hover:text-red-500 transition-colors duration-200"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+
+                            <div className="mt-2">
+                              <p className="text-lg font-bold text-blue-600">
+                                ${(item.quantity * item.price).toLocaleString()}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                ${item.price.toLocaleString()} c/u
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
-          {/* Resumen + CheckoutButton */}
-          <div className="relative h-full">
-            <div className="absolute inset-px rounded-2xl bg-white"></div>
-            <div className="relative overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5 p-8 flex flex-col justify-between items-center space-y-6 h-full">
-              <h3 className="text-xl font-semibold text-[#273043]">Resumen</h3>
-              <p className="text-5xl font-bold text-[#1789FC]">${displayTotal.toLocaleString()}</p>
-              <p className="text-sm text-gray-600 text-center">
-                Total en tu carrito<br/>incluyendo impuestos
-              </p>
+          {/* Resumen de compra */}
+         {/* Resumen de compra */}
+<div className="h-full">
+  <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full flex flex-col">
+    <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
+      <h2 className="text-xl font-bold text-white">Resumen de Compra</h2>
+    </div>
 
-              {/* Aquí reemplazamos el botón interno por tu componente de pago */}
-              <CheckoutButton />
+    {/* Contenido centrado */}
+    <div className="p-6 flex-1 flex flex-col justify-center items-center">
+      <p className="text-sm text-gray-600 mb-2">Total a pagar</p>
+      <p className="text-5xl font-extrabold text-blue-600 mb-4 text-center">
+        ${displayTotal.toLocaleString()}
+      </p>
+      <p className="text-gray-600 text-center">
+        Incluye impuestos aplicables
+      </p>
+    </div>
 
-            </div>
-          </div>
+    {/* Botón */}
+    <div className="p-6 pt-0">
+      <CheckoutButton />
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
     </div>

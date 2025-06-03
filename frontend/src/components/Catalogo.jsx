@@ -84,90 +84,190 @@ export default function Catalogo() {
 
   if (loading)
     return (
-      <p className="text-center text-lg text-gray-700">Cargando productos...</p>
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#1789FC]"></div>
+      </div>
     );
-  if (error) return <p className="text-center text-lg text-red-600">{error}</p>;
+  
+  if (error) 
+    return (
+      <div className="text-center py-20">
+        <div className="bg-red-100 text-red-700 p-4 rounded-lg max-w-md mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p className="mt-4 text-lg font-medium">{error}</p>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="bg-gray-50 py-12 sm:py-16 relative">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <h2 className="text-center text-4xl font-semibold text-[#273043] mb-4">
-          Catálogo de Productos
-        </h2>
+    <div className="bg-gradient-to-b from-gray-50 to-gray-100 py-12 sm:py-16 relative min-h-screen">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <motion.h1 
+            className="text-4xl md:text-5xl font-bold text-[#1a2238] mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Catálogo de Productos
+          </motion.h1>
+          <motion.p 
+            className="text-lg text-gray-600 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            Explora nuestra selección premium de repuestos automotrices
+          </motion.p>
+        </div>
 
         {/* Barra de búsqueda */}
-        <div className="max-w-xs mx-auto mb-8">
-          <input
-            type="text"
-            placeholder="Buscar productos..."
-            value={terminoBusqueda}
-            onChange={(e) => setTerminoBusqueda(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-[#1789FC]"
-          />
-        </div>
+        <motion.div 
+          className="max-w-2xl mx-auto mb-10 relative"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={terminoBusqueda}
+              onChange={(e) => setTerminoBusqueda(e.target.value)}
+              className="w-full px-6 py-4 rounded-xl border-0 bg-white shadow-lg focus:ring-2 focus:ring-[#1789FC] focus:outline-none text-gray-700 placeholder-gray-400 transition-all duration-300"
+            />
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-6 w-6 absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filtros */}
-          <aside className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Filtros</h2>
+          <motion.aside 
+            className="space-y-6"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold text-[#1a2238] mb-4">Filtros</h2>
 
             {/* Marcas */}
-            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-4">
-              <h3
-                className="sticky top-0 bg-white px-3 py-2 mb-3 font-semibold text-gray-700 shadow-sm rounded-t-lg z-10"
-                style={{ borderBottom: "1px solid #e5e7eb" }}
-              >
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <h3 className="bg-gray-50 px-5 py-4 font-bold text-lg text-[#1a2238] border-b border-gray-200">
                 Marcas
               </h3>
-              {brands.map((brand) => (
-                <label
-                  key={brand}
-                  className="flex items-center mb-2 text-sm cursor-pointer hover:text-[#1789FC] transition"
-                >
-                  <input
-                    type="checkbox"
-                    className="mr-3 rounded border-gray-300 focus:ring-[#1789FC]"
-                    checked={selectedBrands.includes(brand)}
-                    onChange={() => toggleBrand(brand)}
-                  />
-                  {brand}
-                </label>
-              ))}
+              <div className="max-h-64 overflow-y-auto p-4">
+                {brands.map((brand) => (
+                  <label
+                    key={brand}
+                    className="flex items-center mb-3 text-base cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:rounded-lg hover:px-3 hover:py-2"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 h-5 w-5 rounded border-gray-300 text-[#1789FC] focus:ring-[#1789FC]"
+                      checked={selectedBrands.includes(brand)}
+                      onChange={() => toggleBrand(brand)}
+                    />
+                    <span className="text-gray-700">{brand}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             {/* Categorías */}
-            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-lg p-4">
-              <h3
-                className="sticky top-0 bg-white px-3 py-2 mb-3 font-semibold text-gray-700 shadow-sm rounded-t-lg z-10"
-                style={{ borderBottom: "1px solid #e5e7eb" }}
-              >
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <h3 className="bg-gray-50 px-5 py-4 font-bold text-lg text-[#1a2238] border-b border-gray-200">
                 Categorías
               </h3>
-              {categories.map((cat) => (
-                <label
-                  key={cat}
-                  className="flex items-center mb-2 text-sm cursor-pointer hover:text-[#1789FC] transition"
-                >
-                  <input
-                    type="checkbox"
-                    className="mr-3 rounded border-gray-300 focus:ring-[#1789FC]"
-                    checked={selectedCategories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                  />
-                  {cat}
-                </label>
-              ))}
+              <div className="max-h-64 overflow-y-auto p-4">
+                {categories.map((cat) => (
+                  <label
+                    key={cat}
+                    className="flex items-center mb-3 text-base cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:rounded-lg hover:px-3 hover:py-2"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mr-3 h-5 w-5 rounded border-gray-300 text-[#1789FC] focus:ring-[#1789FC]"
+                      checked={selectedCategories.includes(cat)}
+                      onChange={() => toggleCategory(cat)}
+                    />
+                    <span className="text-gray-700">{cat}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </aside>
+            
+            {/* Botón Reset */}
+            {(selectedBrands.length > 0 || selectedCategories.length > 0) && (
+              <button
+                onClick={() => {
+                  setSelectedBrands([]);
+                  setSelectedCategories([]);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-gray-600 to-gray-800 hover:from-gray-700 hover:to-gray-900 text-white font-medium rounded-xl shadow-md transition-all duration-300 transform hover:-translate-y-1"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </motion.aside>
 
           {/* Productos */}
-          <main className="lg:col-span-3">
+          <motion.main 
+            className="lg:col-span-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-700">
+                {productosFiltrados.length} {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
+              </h3>
+              
+              <div className="text-sm text-gray-500">
+                {selectedBrands.length > 0 && (
+                  <span className="mr-3">
+                    Marcas: {selectedBrands.join(", ")}
+                  </span>
+                )}
+                {selectedCategories.length > 0 && (
+                  <span>
+                    Categorías: {selectedCategories.join(", ")}
+                  </span>
+                )}
+              </div>
+            </div>
+
             {productosFiltrados.length === 0 ? (
-              <p className="text-center text-lg text-gray-500">
-                No se encontraron productos.
-              </p>
+              <div className="bg-white rounded-2xl shadow-lg p-10 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="text-2xl font-bold text-gray-700 mt-4">No se encontraron productos</h3>
+                <p className="text-gray-500 mt-2 max-w-md mx-auto">
+                  Intenta ajustar tus filtros o términos de búsqueda para encontrar lo que necesitas.
+                </p>
+                <button 
+                  onClick={() => {
+                    setTerminoBusqueda("");
+                    setSelectedBrands([]);
+                    setSelectedCategories([]);
+                  }}
+                  className="mt-6 px-6 py-3 bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] text-white font-medium rounded-xl shadow-md transition-all duration-300 transform hover:-translate-y-1"
+                >
+                  Ver todos los productos
+                </button>
+              </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {productosFiltrados.map((producto) => {
                   const mostrarPrecio =
                     usuario?.rol === "clienteMayorista"
@@ -175,57 +275,95 @@ export default function Catalogo() {
                       : producto.precio_con_iva;
 
                   return (
-                    <div key={producto.id} className="relative">
-                      <div className="absolute inset-px rounded-lg bg-white"></div>
-                      <div className="relative flex h-full flex-col overflow-hidden rounded shadow ring-1 ring-black/5 hover:shadow-lg transition-all duration-200 cursor-pointer">
-                        <div
+                    <motion.div 
+                      key={producto.id}
+                      className="group"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="h-full flex flex-col bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                        <div 
                           onClick={() => navigate(`/producto/${producto.id}`)}
-                          className="px-5 pt-5"
+                          className="relative cursor-pointer"
                         >
-                          <img
-                            src={`http://localhost:3000/uploads/${producto.imagen}`}
-                            alt={producto.nombre}
-                            className="w-full h-48 object-contain"
-                          />
+                          <div className="bg-gray-100 flex items-center justify-center h-56">
+                            <img
+                              src={`http://localhost:3000/uploads/${producto.imagen}`}
+                              alt={producto.nombre}
+                              className="max-h-48 object-contain transition-transform duration-300 group-hover:scale-105"
+                            />
+                          </div>
+                          
+                          <div className="absolute top-4 right-4">
+                            {usuario?.rol === "clienteMayorista" && (
+                              <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                Mayorista
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="px-5 pb-5 flex flex-col grow">
-                          <h3
+                        
+                        <div className="p-5 flex flex-col grow">
+                          <div 
                             onClick={() => navigate(`/producto/${producto.id}`)}
-                            className="mt-2 text-lg font-medium text-gray-950"
+                            className="grow cursor-pointer"
                           >
-                            {producto.nombre}
-                          </h3>
-                          <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                            {producto.descripcion}
-                          </p>
-                          <p className="mt-2 text-sm text-gray-600">
-                            <strong>Marca:</strong> {producto.marca}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-600">
-                            <strong>Categoría:</strong> {producto.categoria}
-                          </p>
-                          <div className="mt-auto">
-                            <p className="text-[#1789FC] font-semibold text-lg mb-4">
-                              ${mostrarPrecio.toLocaleString()}
+                            <div className="flex justify-between items-start">
+                              <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#1789FC] transition-colors">
+                                {producto.nombre}
+                              </h3>
+                            </div>
+                            
+                            <div className="flex items-center mt-2">
+                              <span className="text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1 rounded mr-2">
+                                {producto.marca}
+                              </span>
+                              <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                                {producto.categoria}
+                              </span>
+                            </div>
+                            
+                            <p className="mt-3 text-sm text-gray-600 line-clamp-2">
+                              {producto.descripcion}
                             </p>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                manejarAgregar(producto);
-                              }}
-                              className="w-full bg-[#1789FC] hover:bg-[#273043] text-white font-medium py-2 rounded-lg transition"
-                            >
-                              Agregar al carrito
-                            </button>
+                          </div>
+                          
+                          <div className="mt-4">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="text-lg font-bold text-[#1789FC]">
+                                  ${mostrarPrecio.toLocaleString()}
+                                </span>
+                                {usuario?.rol !== "clienteMayorista" && (
+                                  <p className="text-xs text-gray-500">
+                                    IVA incluido
+                                  </p>
+                                )}
+                              </div>
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  manejarAgregar(producto);
+                                }}
+                                className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] text-white shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-110"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
             )}
-          </main>
+          </motion.main>
         </div>
       </div>
 
@@ -233,13 +371,16 @@ export default function Catalogo() {
       <AnimatePresence>
         {showToast && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            transition={{ duration: 0.3 }}
-            className="fixed bottom-6 right-6 bg-[#1789FC] text-white px-4 py-3 rounded-lg shadow-lg z-50"
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.8 }}
+            transition={{ duration: 0.3, type: "spring" }}
+            className="fixed bottom-8 right-8 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-xl z-50 flex items-center"
           >
-            ¡Producto agregado al carrito!
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="font-medium">¡Producto agregado al carrito!</span>
           </motion.div>
         )}
       </AnimatePresence>
