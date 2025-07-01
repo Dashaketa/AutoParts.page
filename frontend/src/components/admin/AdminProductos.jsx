@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import Toast from '../ui/Toast';
+import ConfirmModal from '../ui/ConfirmModal';
 
 export default function AdminProductos() {
   const navigate = useNavigate();
@@ -12,6 +14,15 @@ export default function AdminProductos() {
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   useEffect(() => {
     (async () => {
@@ -23,17 +34,16 @@ export default function AdminProductos() {
         setProductos(res.data);
       } catch {
         setError('Error al cargar productos');
+        showToast('Error al cargar productos', 'error');
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  // Derivar valores únicos
   const brands = Array.from(new Set(productos.map(p => p.marca))).filter(Boolean);
   const categories = Array.from(new Set(productos.map(p => p.categoria))).filter(Boolean);
 
-  // Aplicar filtros
   const productosFiltrados = productos.filter(p => {
     if (search && !p.nombre.toLowerCase().includes(search.toLowerCase())) return false;
     if (brandFilter !== 'all' && p.marca !== brandFilter) return false;
@@ -41,16 +51,24 @@ export default function AdminProductos() {
     return true;
   });
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar este producto?')) return;
+  const openDeleteModal = (id) => {
+    setSelectedProductId(id);
+    setIsModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
     try {
       const token = localStorage.getItem('token');
-      await api.delete(`/productos/${id}`, {
+      await api.delete(`/productos/${selectedProductId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setProductos(productos.filter(p => p.id !== id));
+      setProductos(productos.filter(p => p.id !== selectedProductId));
+      showToast('Producto eliminado correctamente', 'success');
     } catch {
-      alert('No se pudo eliminar el producto');
+      showToast('No se pudo eliminar el producto', 'error');
+    } finally {
+      setIsModalOpen(false);
+      setSelectedProductId(null);
     }
   };
 
@@ -61,7 +79,6 @@ export default function AdminProductos() {
           Administración de Productos
         </h1>
 
-        {/* Toolbar de filtros */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
           <input
             type="text"
@@ -97,7 +114,6 @@ export default function AdminProductos() {
           </button>
         </div>
 
-        {/* Contenido */}
         {loading ? (
           <p className="text-center text-gray-600">Cargando productos...</p>
         ) : error ? (
@@ -140,7 +156,7 @@ export default function AdminProductos() {
                     Editar
                   </button>
                   <button
-                    onClick={() => handleDelete(producto.id)}
+                    onClick={() => openDeleteModal(producto.id)}
                     className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2 rounded-lg transition"
                   >
                     Eliminar
@@ -151,6 +167,18 @@ export default function AdminProductos() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="¿Eliminar producto?"
+        message="Esta acción no se puede deshacer. ¿Estás seguro de eliminar este producto?"
+        confirmText="Sí, eliminar"
+        type="danger"
+      />
+
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 }

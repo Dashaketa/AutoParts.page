@@ -2,9 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import CheckoutButton from './CheckoutButton';
 import { motion, AnimatePresence } from 'framer-motion';
+import Toast from '../ui/Toast';
 
 export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
   const [displayTotal, setDisplayTotal] = useState(0);
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   useEffect(() => {
     let start = 0;
@@ -27,7 +34,7 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
     <div className="py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Carrito items - Ocupa 2/3 en pantallas grandes */}
+          {/* Carrito items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
               <div className="bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] px-6 py-4">
@@ -82,7 +89,14 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
                                   type="number"
                                   min="1"
                                   value={item.quantity}
-                                  onChange={e => onUpdateQuantity(item.id, parseInt(e.target.value, 10))}
+                                  onChange={e => {
+                                    const nuevaCantidad = parseInt(e.target.value, 10);
+                                    if (nuevaCantidad > item.stock) {
+                                      showToast(`No puedes agregar más de ${item.stock} unidades disponibles.`, "error");
+                                      return;
+                                    }
+                                    onUpdateQuantity(item.id, nuevaCantidad);
+                                  }}
                                   className="w-16 px-2 py-1 text-center border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                               </div>
@@ -116,33 +130,32 @@ export default function Cart({ cartItems, total, onUpdateQuantity, onRemove }) {
           </div>
 
           {/* Resumen de compra */}
-         {/* Resumen de compra */}
-<div className="h-full">
-  <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full flex flex-col">
-    <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
-      <h2 className="text-xl font-bold text-white">Detalles de Pago</h2>
-    </div>
+          <div className="h-full">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full flex flex-col">
+              <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
+                <h2 className="text-xl font-bold text-white">Detalles de Pago</h2>
+              </div>
 
-    {/* Contenido centrado */}
-    <div className="p-6 flex-1 flex flex-col justify-center items-center">
-      <p className="text-sm text-gray-600 mb-2">Total a pagar</p>
-      <p className="text-5xl font-extrabold text-blue-600 mb-4 text-center">
-        ${displayTotal.toLocaleString()}
-      </p>
-      <p className="text-gray-600 text-center">
-        Incluye impuestos aplicables
-      </p>
-    </div>
+              <div className="p-6 flex-1 flex flex-col justify-center items-center">
+                <p className="text-sm text-gray-600 mb-2">Total a pagar</p>
+                <p className="text-5xl font-extrabold text-blue-600 mb-4 text-center">
+                  ${displayTotal.toLocaleString()}
+                </p>
+                <p className="text-gray-600 text-center">
+                  Incluye impuestos aplicables
+                </p>
+              </div>
 
-    {/* Botón */}
-    <div className="p-6 pt-0">
-      <CheckoutButton />
-    </div>
-  </div>
-</div>
-
+              <div className="p-6 pt-0">
+                <CheckoutButton />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 }

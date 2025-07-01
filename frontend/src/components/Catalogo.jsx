@@ -54,12 +54,24 @@ export default function Catalogo() {
         ? producto.precio_mayorista
         : producto.precio_con_iva;
 
+        const carritoActual = JSON.parse(localStorage.getItem("cart")) || [];
+const itemExistente = carritoActual.find((i) => i.id === producto.id);
+const cantidadEnCarrito = itemExistente ? itemExistente.quantity : 0;
+
+if (cantidadEnCarrito + 1 > producto.stock) {
+  alert("No hay suficiente stock disponible");
+  return;
+}
+
     addToCart({
       id: producto.id,
       name: producto.nombre,
       price: precioFinal,
       quantity: 1,
       image: producto.imagen,
+      stock: producto.stock, // <--- IMPORTANTE
+
+
     });
 
     // Mostrar toast
@@ -343,17 +355,28 @@ export default function Catalogo() {
                                 )}
                               </div>
                               
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  manejarAgregar(producto);
-                                }}
-                                className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] text-white shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-110"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                              </button>
+                              {producto.stock <= 0 ? (
+  <button
+    disabled
+    className="w-12 h-12 rounded-full bg-gray-300 text-white cursor-not-allowed"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  </button>
+) : (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      manejarAgregar(producto);
+    }}
+    className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-[#1789FC] to-[#0d5ca8] text-white shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-110"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+    </svg>
+  </button>
+)}
                             </div>
                           </div>
                         </div>

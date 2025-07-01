@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import Toast from '../ui/Toast';
 
 export default function EditarProducto() {
   const { id } = useParams();
@@ -8,6 +9,12 @@ export default function EditarProducto() {
   const [form, setForm] = useState(null);
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   useEffect(() => {
     (async () => {
@@ -29,6 +36,7 @@ export default function EditarProducto() {
         });
       } catch {
         setError('Error al cargar producto');
+        showToast('Error al cargar producto', 'error');
       }
     })();
   }, [id]);
@@ -57,10 +65,11 @@ export default function EditarProducto() {
       await api.put(`/productos/${id}`, data, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Producto actualizado correctamente');
-      navigate('/admin/productos');
+      showToast('Producto actualizado correctamente', 'success');
+      setTimeout(() => navigate('/admin/productos'), 1500);
     } catch {
       setError('Error al actualizar producto');
+      showToast('Error al actualizar producto', 'error');
     }
   };
 
@@ -167,6 +176,7 @@ export default function EditarProducto() {
           Guardar Cambios
         </button>
       </form>
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
-// src/components/admin/NuevoProducto.jsx
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../services/api'
+import Toast from '../ui/Toast'
 
 export default function NuevoProducto() {
   const navigate = useNavigate()
@@ -13,10 +13,17 @@ export default function NuevoProducto() {
     precio: '',
     stock: '',
     peso: '',
-    costo_precio: ''
+    costo_precio: '',
+    precio_mayorista: ''
   })
   const [file, setFile] = useState(null)
   const [error, setError] = useState('')
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000)
+  }
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -42,10 +49,11 @@ export default function NuevoProducto() {
       await api.post('/productos', data, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      alert('Producto creado correctamente')
-      navigate('/admin/productos')
+      showToast('Producto creado correctamente', 'success')
+      setTimeout(() => navigate('/admin/productos'), 1500)
     } catch {
       setError('Error al crear producto')
+      showToast('Error al crear producto', 'error')
     }
   }
 
@@ -107,6 +115,16 @@ export default function NuevoProducto() {
         </div>
         <div className="grid grid-cols-2 gap-4">
           <input
+            name="precio_mayorista"
+            type="number"
+            value={form.precio_mayorista}
+            onChange={handleChange}
+            placeholder="Precio Mayorista"
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <input
             name="stock"
             type="number"
             value={form.stock}
@@ -141,6 +159,8 @@ export default function NuevoProducto() {
           Crear Producto
         </button>
       </form>
+
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
     </div>
-)
+  )
 }

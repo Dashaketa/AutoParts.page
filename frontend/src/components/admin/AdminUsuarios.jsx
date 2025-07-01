@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import api from '../../services/api'
+import Toast from '../ui/Toast'
+import ModalConfirm from '../ui/ModalConfirm'
+
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState([])
@@ -10,9 +13,18 @@ export default function AdminUsuarios() {
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
 
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' })
+  const [confirmData, setConfirmData] = useState({ show: false, userId: null })
+
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type })
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000)
+  }
+
   // Carga inicial de usuarios
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       try {
         const token = localStorage.getItem('token')
         const res = await api.get('/usuarios', {
@@ -21,6 +33,7 @@ export default function AdminUsuarios() {
         setUsers(res.data.usuarios || res.data) // adapta según respuesta backend
       } catch {
         setError('Error al cargar usuarios')
+        showToast('Error al cargar usuarios', 'error')
       } finally {
         setLoading(false)
       }
@@ -49,23 +62,34 @@ export default function AdminUsuarios() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUsers(users.map(u => u.id === id ? { ...u, rol: newRole } : u))
+      showToast('Rol actualizado correctamente', 'success')
     } catch {
-      alert('No se pudo actualizar el rol')
+      showToast('No se pudo actualizar el rol', 'error')
     }
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Eliminar este usuario?')) return
+    setConfirmData({
+      show: true,
+      userId: id
+    })
+  }
+  
+  const confirmDelete = async () => {
     try {
       const token = localStorage.getItem('token')
-      await api.delete(`/usuarios/${id}`, {
+      await api.delete(`/usuarios/${confirmData.userId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setUsers(users.filter(u => u.id !== id))
+      setUsers(users.filter(u => u.id !== confirmData.userId))
+      showToast('Usuario eliminado correctamente')
     } catch {
-      alert('No se pudo eliminar el usuario')
+      showToast('Error al eliminar el usuario', 'error')
+    } finally {
+      setConfirmData({ show: false, userId: null })
     }
   }
+  
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen p-8">
@@ -147,6 +171,16 @@ export default function AdminUsuarios() {
             ))}
           </div>
         )}
+
+        <Toast show={toast.show} message={toast.message} type={toast.type} />
+
+        <ModalConfirm
+  show={confirmData.show}
+  title="Eliminar Usuario"
+  message="¿Estás seguro de que deseas eliminar este usuario?"
+  onConfirm={confirmDelete}
+  onCancel={() => setConfirmData({ show: false, userId: null })}
+/>
       </div>
     </div>
   )

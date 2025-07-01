@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import Toast from '../ui/Toast';
+import ModalConfirm from '../ui/ModalConfirm';
 
 export default function AdminPedidos() {
   const navigate = useNavigate();
@@ -11,6 +13,14 @@ export default function AdminPedidos() {
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
+
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [confirmCancel, setConfirmCancel] = useState({ show: false, pedidoId: null });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+  };
 
   useEffect(() => {
     (async () => {
@@ -27,6 +37,27 @@ export default function AdminPedidos() {
       }
     })();
   }, []);
+
+  const cancelarPedido = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const { pedidoId } = confirmCancel;
+
+      await api.delete(`/pedido/pedidos/${pedidoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      showToast('Pedido cancelado correctamente');
+      setPedidos(pedidos.map(p =>
+        p.id === pedidoId ? { ...p, estado: 'cancelado' } : p
+      ));
+    } catch (error) {
+      console.error('Error al cancelar pedido:', error);
+      showToast('No se pudo cancelar el pedido', 'error');
+    } finally {
+      setConfirmCancel({ show: false, pedidoId: null });
+    }
+  };
 
   const filteredPedidos = pedidos.filter((p) => {
     if (statusFilter !== 'all' && p.estado !== statusFilter) return false;
@@ -128,7 +159,8 @@ export default function AdminPedidos() {
                   </button>
                   <button
                     className="flex-1 bg-[#DD0426] hover:bg-red-700 text-white font-medium py-2 rounded-lg transition"
-                    onClick={() => alert('Función de cancelar pendiente')}
+                    onClick={() => setConfirmCancel({ show: true, pedidoId: pedido.id })}
+                    disabled={pedido.estado === 'cancelado'}
                   >
                     Cancelar
                   </button>
@@ -137,6 +169,16 @@ export default function AdminPedidos() {
             ))}
           </div>
         )}
+
+        {/* Toast y Confirmación */}
+        <Toast show={toast.show} message={toast.message} type={toast.type} />
+        <ModalConfirm
+          show={confirmCancel.show}
+          title="Cancelar Pedido"
+          message="¿Estás seguro de que deseas cancelar este pedido?"
+          onConfirm={cancelarPedido}
+          onCancel={() => setConfirmCancel({ show: false, pedidoId: null })}
+        />
       </div>
     </div>
   );
