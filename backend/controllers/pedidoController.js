@@ -296,3 +296,99 @@ exports.generarPedidoPDF = async (req, res) => {
     res.status(500).send('Error interno al generar el PDF');
   }
 };
+
+exports.getTopProductos = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin } = req.query;
+    
+    const query = `
+      SELECT 
+        p.id,
+        p.nombre,
+        p.marca,
+        p.imagen,
+        SUM(dp.cantidad) as vendidos,
+        SUM(dp.cantidad * dp.precio_unitario) as total_ventas
+      FROM detalles_pedido dp
+      JOIN productos p ON dp.producto_id = p.id
+      JOIN pedidos ped ON dp.pedido_id = ped.id
+      WHERE ped.estado = 'completado'
+      ${fechaInicio && fechaFin ? 
+        `AND ped.fecha_pedido BETWEEN ? AND ?` : ''}
+      GROUP BY p.id
+      ORDER BY vendidos DESC
+      LIMIT 5
+    `;
+
+    const params = [];
+    if (fechaInicio && fechaFin) {
+      params.push(fechaInicio, fechaFin);
+    }
+
+    const [result] = await pool.query(query, params);
+    
+    res.json(result.map(item => ({
+      ...item,
+      vendidos: Number(item.vendidos),
+      total_ventas: Number(item.total_ventas)
+    })));
+
+  } catch (error) {
+    console.error('Error en getTopProductos:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener productos más vendidos',
+      detalle: error.message 
+    });
+  }
+};
+
+
+exports.getPedidosFiltrados = async (req, res) => {
+  try {
+    const { fechaInicio, fechaFin, estado } = req.query;
+    
+    let query = `
+      SELECT 
+        p.id,
+        p.fecha_pedido,
+        p.estado,
+        p.total,
+        u.nombre as cliente,
+        u.email
+      FROM pedidos p
+      JOIN usuarios u ON p.usuario_id = u.id
+      WHERE 1=1
+    `;
+
+    const params = [];
+    
+    if (fechaInicio && fechaFin) {
+      query += ` AND p.fecha_pedido BETWEEN ? AND ?`;
+      params.push(fechaInicio, fechaFin);
+    }
+    
+    if (estado && estado !== 'todos') {
+      query += ` AND p.estado = ?`;
+      params.push(estado);
+    }
+
+    query += ` ORDER BY p.fecha_pedido DESC LIMIT 5`;
+
+    const [pedidos] = await pool.query(query, params);
+    
+    // Formatear fechas
+    const pedidosFormateados = pedidos.map(p => ({
+      ...p,
+      fecha_pedido: new Date(p.fecha_pedido).toISOString()
+    }));
+
+    res.json(pedidosFormateados);
+
+  } catch (error) {
+    console.error('Error en getPedidosFiltrados:', error);
+    res.status(500).json({ 
+      error: 'Error al obtener pedidos',
+      detalle: error.message 
+    });
+  }
+};

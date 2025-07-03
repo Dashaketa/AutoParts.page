@@ -30,5 +30,9 @@ router.delete("/pedidos/:pedidoId", ctrl.eliminarPedido);
 // Generar PDF de un pedido
 router.get('/pdf/:id', ctrl.generarPedidoPDF);
 
+// Nuevas rutas para el dashboard
+router.get("/top-productos", ctrl.getTopProductos); // Top 5 productos
+router.get("/filtro", ctrl.getPedidosFiltrados); // Pedidos con filtros
+
 
 module.exports = router;

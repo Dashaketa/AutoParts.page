@@ -21,6 +21,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173', // minorista
   'http://localhost:4000', // mayorista (o el puerto que uses)
+  'http://localhost:4001', // mayorista (o el puerto que uses)
+
 ];
 
 app.use(cors({

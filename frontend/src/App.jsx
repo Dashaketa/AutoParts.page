@@ -18,6 +18,7 @@ import AdminProductos from "./components/admin/AdminProductos";
 import AdminUsuarios from "./components/admin/AdminUsuarios";
 import NuevoProducto from "./components/admin/NuevoProducto";
 import EditarProducto from "./components/admin/EditarProducto";
+import AdminDashboard from "./components/admin/AdminDashboard";
 
 import SingleOrder from "./components/dashboard/SingleOrder";
 import PaymentSuccess from "./pages/PaymentSucces";
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="productos/nuevo" element={<NuevoProducto />} />
           <Route path="productos/editar/:id" element={<EditarProducto />} />
           <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="dashboardAdmin" element={<AdminDashboard />} />
         </Route>
 
         {/* Dashboard usuario */}
