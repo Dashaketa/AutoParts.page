@@ -1,12 +1,40 @@
-"use client"
+"use client";
 
-import { useLocation, useNavigate } from "react-router-dom"
-import { CheckCircle, Package, ArrowRight, Sparkles, Gift } from "lucide-react"
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { CheckCircle, Package, ArrowRight, Sparkles, Gift, FileText } from "lucide-react";
 
 export default function PaymentSuccess() {
-  const navigate = useNavigate()
-  const params = new URLSearchParams(useLocation().search)
-  const orderId = params.get("orderId")
+  const navigate = useNavigate();
+  const params = new URLSearchParams(useLocation().search);
+  const orderId = params.get("orderId");
+
+  const [facturaId, setFacturaId] = useState(null);
+
+  useEffect(() => {
+    const generarFactura = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/pedido/facturas/crear/${orderId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ metodo_pago: "transferencia" }) // Ajusta método pago si quieres
+        });
+
+        if (!res.ok) throw new Error("Error al crear factura");
+
+        const data = await res.json();
+        setFacturaId(data.facturaId);
+      } catch (error) {
+        console.error("Error al crear la factura:", error);
+      }
+    };
+
+    if (orderId) {
+      generarFactura();
+    }
+  }, [orderId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
@@ -38,7 +66,9 @@ export default function PaymentSuccess() {
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Sparkles className="w-6 h-6 text-white animate-spin" />
-                <h1 className="text-4xl md:text-5xl font-bold text-white">¡Pago Exitoso!</h1>
+                <h1 className="text-4xl md:text-5xl font-bold text-white">
+                  ¡Pago Exitoso!
+                </h1>
                 <Sparkles className="w-6 h-6 text-white animate-spin" />
               </div>
             </div>
@@ -51,7 +81,9 @@ export default function PaymentSuccess() {
               <div className="inline-flex items-center gap-3 bg-gradient-to-r from-green-100 to-emerald-100 px-6 py-4 rounded-2xl border border-green-200 mb-6">
                 <Package className="w-6 h-6 text-green-600" />
                 <div className="text-left">
-                  <p className="text-sm font-medium text-green-700 mb-1">Número de pedido</p>
+                  <p className="text-sm font-medium text-green-700 mb-1">
+                    Número de pedido
+                  </p>
                   <p className="text-xl font-bold text-green-800">#{orderId}</p>
                 </div>
               </div>
@@ -59,7 +91,9 @@ export default function PaymentSuccess() {
               <p className="text-lg text-slate-600 mb-2">
                 Tu pedido ha sido creado correctamente y está siendo procesado.
               </p>
-              <p className="text-sm text-slate-500">Recibirás un email de confirmación con todos los detalles.</p>
+              <p className="text-sm text-slate-500">
+                Recibirás un email de confirmación con todos los detalles.
+              </p>
             </div>
 
             {/* Características adicionales */}
@@ -68,7 +102,9 @@ export default function PaymentSuccess() {
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <CheckCircle className="w-5 h-5 text-blue-600" />
                 </div>
-                <h3 className="font-semibold text-blue-800 mb-1">Pago Confirmado</h3>
+                <h3 className="font-semibold text-blue-800 mb-1">
+                  Pago Confirmado
+                </h3>
                 <p className="text-xs text-blue-600">Transacción segura</p>
               </div>
 
@@ -76,7 +112,9 @@ export default function PaymentSuccess() {
                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Package className="w-5 h-5 text-purple-600" />
                 </div>
-                <h3 className="font-semibold text-purple-800 mb-1">En Proceso</h3>
+                <h3 className="font-semibold text-purple-800 mb-1">
+                  En Proceso
+                </h3>
                 <p className="text-xs text-purple-600">Preparando envío</p>
               </div>
 
@@ -100,6 +138,16 @@ export default function PaymentSuccess() {
                 <ArrowRight className="w-5 h-5" />
               </button>
 
+              {facturaId && (
+             <button
+             onClick={() => navigate(`/factura/${facturaId}`)}
+             className="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold px-8 py-4 rounded-2xl shadow-lg shadow-green-600/25 hover:shadow-green-600/40 transition-all duration-300 hover:-translate-y-1"
+           >
+             <FileText className="w-5 h-5" />
+             Ver Factura
+           </button>
+              )}
+
               <button
                 onClick={() => navigate("/catalogo")}
                 className="inline-flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-8 py-4 rounded-2xl border-2 border-slate-200 hover:border-slate-300 transition-all duration-300 hover:-translate-y-1"
@@ -115,7 +163,9 @@ export default function PaymentSuccess() {
                 ¿Qué sigue?
               </h3>
               <div className="text-sm text-slate-600 space-y-2">
-                <p>• Recibirás un email de confirmación en los próximos minutos</p>
+                <p>
+                  • Recibirás un email de confirmación en los próximos minutos
+                </p>
                 <p>• Te notificaremos cuando tu pedido esté listo para envío</p>
                 <p>• Puedes rastrear el estado en tu dashboard</p>
               </div>
@@ -125,9 +175,11 @@ export default function PaymentSuccess() {
 
         {/* Mensaje de agradecimiento */}
         <div className="text-center mt-8">
-          <p className="text-slate-600 font-medium">¡Gracias por confiar en AutoParts! 🚗✨</p>
+          <p className="text-slate-600 font-medium">
+            ¡Gracias por confiar en AutoParts! 🚗✨
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

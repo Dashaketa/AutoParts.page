@@ -296,7 +296,7 @@ exports.generarPedidoPDF = async (req, res) => {
     res.status(500).send('Error interno al generar el PDF');
   }
 };
-
+// Obtener los 5 productos más vendidos
 exports.getTopProductos = async (req, res) => {
   try {
     const { fechaInicio, fechaFin } = req.query;
@@ -342,7 +342,7 @@ exports.getTopProductos = async (req, res) => {
   }
 };
 
-
+// Filtrar pedidos por fecha y estado
 exports.getPedidosFiltrados = async (req, res) => {
   try {
     const { fechaInicio, fechaFin, estado } = req.query;
@@ -390,5 +390,223 @@ exports.getPedidosFiltrados = async (req, res) => {
       error: 'Error al obtener pedidos',
       detalle: error.message 
     });
+  }
+};
+
+// Generar Factura PDF para pedidos completados
+exports.generarFacturaPDF = async (req, res) => {
+  const { pedidoId } = req.params;
+
+  try {
+    // Verificar que el pedido está completado
+    const [pedido] = await pool.query(
+      `SELECT p.id, p.fecha_pedido, p.total, p.estado, 
+       u.nombre AS cliente_nombre, u.email, u.direccion
+       FROM pedidos p
+       JOIN usuarios u ON p.usuario_id = u.id
+       WHERE p.id = ? AND p.estado = 'completado'`,
+      [pedidoId]
+    );
+
+    if (pedido.length === 0) {
+      return res.status(404).json({ error: "Pedido no encontrado o no está completado" });
+    }
+
+    // Obtener detalles
+    const [detalles] = await pool.query(
+      `SELECT dp.cantidad, dp.precio_unitario, 
+       pr.nombre, pr.marca, pr.descripcion
+       FROM detalles_pedido dp
+       JOIN productos pr ON dp.producto_id = pr.id
+       WHERE dp.pedido_id = ?`,
+      [pedidoId]
+    );
+
+    // Configurar PDF
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=factura_${pedidoId}.pdf`);
+    doc.pipe(res);
+
+    // Encabezado
+    doc
+      .fillColor('#273043')
+      .fontSize(20)
+      .text('TALLER DE MANOLO', { align: 'center' })
+      .fontSize(14)
+      .text('Factura de Venta', { align: 'center' })
+      .moveDown();
+
+    // Datos del cliente
+    doc
+      .fontSize(12)
+      .text(`Cliente: ${pedido[0].cliente_nombre}`)
+      .text(`Dirección: ${pedido[0].direccion}`)
+      .text(`Email: ${pedido[0].email}`)
+      .text(`Fecha: ${new Date(pedido[0].fecha_pedido).toLocaleDateString()}`)
+      .text(`Factura #: ${pedidoId}`)
+      .moveDown();
+
+    // Línea divisoria
+    doc
+      .moveTo(doc.page.margins.left, doc.y)
+      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
+      .strokeColor('#cccccc')
+      .lineWidth(1)
+      .stroke();
+
+    // Detalles de productos
+    doc.moveDown();
+    doc.fontSize(14).text('Detalles de la Compra:', { underline: true });
+    doc.moveDown(0.5);
+
+    detalles.forEach(item => {
+      const subtotal = item.precio_unitario * item.cantidad;
+      doc
+        .fontSize(12)
+        .text(`${item.nombre} - ${item.marca}`)
+        .text(`Cantidad: ${item.cantidad} x $${item.precio_unitario.toLocaleString('es-CL')} = $${subtotal.toLocaleString('es-CL')}`)
+        .moveDown(0.5);
+    });
+
+    // Total
+    doc.moveDown();
+    doc
+      .fontSize(14)
+      .text(`Total: $${pedido[0].total.toLocaleString('es-CL')}`, { align: 'right' });
+
+    doc.end();
+  } catch (error) {
+    console.error('Error al generar factura:', error);
+    res.status(500).json({ error: 'Error al generar factura' });
+  }
+};
+// Obtener detalles de una factura (pedido)
+exports.obtenerDetallesFactura = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 1. Buscar pedido + datos del cliente
+    const [pedido] = await pool.query(
+      `SELECT p.*, u.nombre as cliente, u.email, u.direccion
+       FROM pedidos p
+       JOIN usuarios u ON p.usuario_id = u.id
+       WHERE p.id = ?`,
+      [id]
+    );
+
+    // ⚠️ Verificar que el pedido exista
+    if (!pedido || pedido.length === 0) {
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    // 2. Buscar los items del pedido
+    const [items] = await pool.query(
+      `SELECT dp.*, pr.nombre, pr.marca, pr.imagen
+       FROM detalles_pedido dp
+       JOIN productos pr ON dp.producto_id = pr.id
+       WHERE dp.pedido_id = ?`,
+      [id]
+    );
+
+    // 3. Enviar respuesta
+    res.json({
+      ...pedido[0],
+      items
+    });
+
+  } catch (error) {
+    console.error("Error al obtener factura:", error);
+    res.status(500).json({ error: "Error al obtener factura" });
+  }
+};
+
+// Crear factura desde un pedido
+exports.crearFacturaDesdePedido = async (req, res) => {
+  const pedidoId = Number(req.params.pedidoId);
+  const metodo_pago = req.body.metodo_pago || "transferencia";
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1. Obtener el pedido y usuario
+    const [pedidoRows] = await conn.query(
+      `SELECT p.total, u.id AS cliente_id
+       FROM pedidos p
+       JOIN usuarios u ON p.usuario_id = u.id
+       WHERE p.id = ?`,
+      [pedidoId]
+    );
+
+    if (!pedidoRows || pedidoRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({ error: "Pedido no encontrado" });
+    }
+
+    const { total, cliente_id } = pedidoRows[0];
+
+    // 2. Crear la factura
+    const [facturaResult] = await conn.query(
+      `INSERT INTO facturas (cliente_id, total, metodo_pago)
+       VALUES (?, ?, ?)`,
+      [cliente_id, total, metodo_pago]
+    );
+
+    const facturaId = facturaResult.insertId;
+
+    // 3. Obtener los detalles del pedido
+    const [items] = await conn.query(
+      `SELECT producto_id, cantidad, precio_unitario
+       FROM detalles_pedido
+       WHERE pedido_id = ?`,
+      [pedidoId]
+    );
+
+    // 4. Insertar en items_factura
+    for (const item of items) {
+      await conn.query(
+        `INSERT INTO items_factura (factura_id, producto_id, cantidad, precio_unitario)
+         VALUES (?, ?, ?, ?)`,
+        [facturaId, item.producto_id, item.cantidad, item.precio_unitario]
+      );
+    }
+
+    await conn.commit();
+    return res.status(201).json({ message: "Factura creada correctamente", facturaId });
+
+  } catch (error) {
+    await conn.rollback();
+    console.error("Error al crear factura:", error);
+    return res.status(500).json({ error: "Error al crear la factura" });
+  } finally {
+    conn.release();
+  }
+};
+
+// Obtener factura por ID
+exports.obtenerFacturaPorId = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [factura] = await pool.query(
+      `SELECT f.*, u.nombre AS cliente
+       FROM facturas f
+       JOIN usuarios u ON f.cliente_id = u.id
+       WHERE f.id = ?`,
+      [id]
+    );
+
+    const [items] = await pool.query(
+      `SELECT i.*, p.nombre, p.marca
+       FROM items_factura i
+       JOIN productos p ON i.producto_id = p.id
+       WHERE i.factura_id = ?`,
+      [id]
+    );
+
+    res.json({ ...factura[0], items });
+  } catch (error) {
+    console.error("Error al obtener factura:", error);
+    res.status(500).json({ error: "Error al obtener factura" });
   }
 };

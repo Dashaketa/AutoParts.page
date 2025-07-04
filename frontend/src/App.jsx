@@ -24,6 +24,7 @@ import SingleOrder from "./components/dashboard/SingleOrder";
 import PaymentSuccess from "./pages/PaymentSucces";
 import PaymentFail from "./pages/PaymentFail";
 import Checkout from "./pages/CheckOut";
+import FacturaView from './pages/FacturaView'; // ruta correcta al componente
 
 const RutaPrivada = ({ children }) => {
   const { usuario } = useContext(AuthContext);
@@ -94,6 +95,17 @@ export default function App() {
         {/* Resultados de pago */}
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/fail" element={<PaymentFail />} />
+        {/* Factura */}
+        <Route
+  path="/factura/:facturaId"
+  element={
+    <RutaPrivada>
+      <FacturaView />
+    </RutaPrivada>
+  }
+/>
+
+
 
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/home" replace />} />

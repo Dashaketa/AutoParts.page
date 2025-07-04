@@ -78,7 +78,7 @@ export default function Dashboard() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 bg-clip-text text-transparent mb-4">
-              Mi Dashboard
+              Mi Cuenta
             </h1>
             <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
               Administra tu carrito de compras y revisa tu historial de pedidos en un solo lugar
