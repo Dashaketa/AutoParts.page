@@ -11,16 +11,34 @@ const productoRoutes  = require('./routes/productoRoutes');
 const pedidoRoutes    = require('./routes/pedidoRoutes');
 const authRoutes      = require('./routes/authRoutes');
 const carritoRoutes = require('./routes/carritoRoutes');
+const carritoTemporalRoutes = require('./routes/carritoTemporalRoutes');
+const facturaRoutes = require('./routes/facturaRoutes');
+
 
 
 const app = express();
 
 // 1) Habilitar CORS (modo abierto)
+// 1) Habilitar CORS (soporta frontend minorista y mayorista)
+const allowedOrigins = [
+  'http://localhost:5173', // minorista
+  'http://localhost:4000', // mayorista (o el puerto que uses)
+  'http://localhost:4001', // mayorista (o el puerto que uses)
+
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',       // tu frontend Vite
+  origin: function (origin, callback) {
+    // Permitir sin problema en llamadas como Postman o backend interno
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type','Authorization']
 }));
+
 
 const session = require('express-session');
 
@@ -55,6 +73,9 @@ app.use('/productos', productoRoutes);
 app.use('/pedido',    pedidoRoutes);
 app.use('/auth',     authRoutes);
 app.use('/carrito', carritoRoutes);
+app.use('/carrito-temporal', carritoTemporalRoutes);
+app.use('/api', facturaRoutes);
+
 
 
 // 7) Ruta raíz de prueba

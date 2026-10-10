@@ -27,4 +27,18 @@ router.put("/pedidos/:pedidoId", ctrl.actualizarPedido);
 // DELETE /api/pedidos/:pedidoId
 router.delete("/pedidos/:pedidoId", ctrl.eliminarPedido);
 
+// Generar PDF de un pedido
+router.get('/pdf/:id', ctrl.generarPedidoPDF);
+
+// Nuevas rutas para el dashboard
+router.get("/top-productos", ctrl.getTopProductos); // Top 5 productos
+router.get("/filtro", ctrl.getPedidosFiltrados); // Pedidos con filtros
+
+router.get('/pedidos/:pedidoId/factura', ctrl.generarFacturaPDF);
+router.get('/pedidos/:id/factura-detalle', ctrl.obtenerDetallesFactura);
+router.post("/facturas/crear/:pedidoId", ctrl.crearFacturaDesdePedido);
+router.get("/facturas/:id", ctrl.obtenerFacturaPorId);
+
+
+
 module.exports = router;

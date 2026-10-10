@@ -1,132 +1,54 @@
-// src/components/home/InfoGrid3.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export default function InfoGrid3() {
+const bentoItems = [
+  {
+    title: '¿Cómo sé qué repuesto necesito?',
+    description: 'Puedes ingresar el modelo y año de tu vehículo, o enviarnos una foto del repuesto actual.',
+    bgImage: '/imagenes/2.png',
+  },
+  {
+    title: '¿Qué garantías tienen los productos?',
+    description: 'Todos los repuestos están cubiertos por garantía de funcionamiento y compatibilidad.',
+    bgImage: '/imagenes/3.png',
+  },
+  {
+    title: '¿Hacen envíos a regiones extremas?',
+    description: 'Sí, llegamos a todo Chile. Solo asegúrate de ingresar bien tu dirección.',
+    bgImage: '/imagenes/4.png',
+  },
+  {
+    title: '¿Qué pasa si el repuesto no es compatible?',
+    description: 'Te lo cambiamos sin costo adicional. Queremos que tengas la pieza correcta.',
+    bgImage: '/imagenes/5.png',
+  },
+];
+
+export default function CardGrid() {
   return (
-    <section className="bg-white">
-      <div className="py-8 px-4 mx-auto max-w-screen-xl lg:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Bento 1 */}
+    <section className="bg-gray-100 py-10">
+      <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
+        {bentoItems.map(({ title, description, bgImage }, index) => (
           <motion.div
-            className="group relative flex flex-col overflow-hidden rounded-xl p-6 bg-gradient-to-br from-indigo-500 to-indigo-600"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            whileHover={{ scale: 1.02 }}
+            key={index}
+            className="bg-white rounded-xl shadow-md overflow-hidden cursor-pointer flex flex-col w-full max-w-sm"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: 'spring', stiffness: 300 }}
           >
-            <div className="absolute top-4 right-4 text-2xl">🔍</div>
-            <div className="relative z-10 flex flex-col h-full justify-center">
-              <motion.h3
-                className="text-xl font-semibold text-white mb-2"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                ¿Cómo sé qué repuesto necesito?
-              </motion.h3>
-              <motion.p
-                className="text-sm text-indigo-100"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                Puedes ingresar el modelo y año de tu vehículo, o enviarnos una foto del repuesto actual.
-              </motion.p>
-            </div>
-          </motion.div>
+            {/* Imagen arriba con altura fija para mantener proporción */}
+            <div
+              className="h-48 sm:h-56 md:h-64 bg-cover bg-center"
+              style={{ backgroundImage: `url(${bgImage})` }}
+              alt={title}
+            />
 
-          {/* Bento 2 */}
-          <motion.div
-            className="group relative flex flex-col overflow-hidden rounded-xl p-6 bg-gradient-to-br from-emerald-500 to-teal-500"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="absolute top-4 right-4 text-2xl">✔️</div>
-            <div className="relative z-10 flex flex-col h-full justify-center">
-              <motion.h3
-                className="text-xl font-semibold text-white mb-2"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
-                ¿Qué garantías tienen los productos?
-              </motion.h3>
-              <motion.p
-                className="text-sm text-emerald-100"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                Todos los repuestos están cubiertos por garantía de funcionamiento y compatibilidad.
-              </motion.p>
+            {/* Texto abajo */}
+            <div className="p-6 flex flex-col flex-grow">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-900">{title}</h3>
+              <p className="text-gray-700 flex-grow">{description}</p>
             </div>
           </motion.div>
-
-          {/* Bento 3 */}
-          <motion.div
-            className="group relative flex flex-col overflow-hidden rounded-xl p-6 bg-gradient-to-br from-orange-500 to-red-500"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="absolute top-4 right-4 text-2xl">🚚</div>
-            <div className="relative z-10 flex flex-col h-full justify-center">
-              <motion.h3
-                className="text-xl font-semibold text-white mb-2"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                ¿Hacen envíos a regiones extremas?
-              </motion.h3>
-              <motion.p
-                className="text-sm text-orange-100"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                Sí, llegamos a todo Chile. Solo asegúrate de ingresar bien tu dirección.
-              </motion.p>
-            </div>
-          </motion.div>
-
-          {/* Bento 4 */}
-          <motion.div
-            className="group relative flex flex-col overflow-hidden rounded-xl p-6 bg-gradient-to-br from-purple-500 to-pink-500"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="absolute top-4 right-4 text-2xl">⚙️</div>
-            <div className="relative z-10 flex flex-col h-full justify-center">
-              <motion.h3
-                className="text-xl font-semibold text-white mb-2"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                ¿Qué pasa si el repuesto no es compatible?
-              </motion.h3>
-              <motion.p
-                className="text-sm text-purple-100"
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                Te lo cambiamos sin costo adicional. Queremos que tengas la pieza correcta.
-              </motion.p>
-            </div>
-          </motion.div>
-        </div>
+        ))}
       </div>
     </section>
   );

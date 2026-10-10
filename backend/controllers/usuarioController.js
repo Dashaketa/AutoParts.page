@@ -52,3 +52,28 @@ exports.eliminarUsuario = async (req, res) => {
   }
 };
 
+
+exports.updateUsuario = async (req, res) => {
+  const { id } = req.params;
+  const { rol } = req.body;
+
+  if (!rol) {
+    return res.status(400).json({ error: "El campo 'rol' es obligatorio" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      'UPDATE usuarios SET rol = ? WHERE id = ?',
+      [rol, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({ message: "Rol actualizado correctamente" });
+  } catch (err) {
+    console.error("Error en updateUsuario:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

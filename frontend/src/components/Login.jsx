@@ -168,6 +168,12 @@ export default function Login() {
           >
             ← Volver al inicio
           </Link>
+          <Link
+            to="/register"
+            className="text-sm font-medium text-[#1789FC] hover:text-[#273043] transition"
+          >
+           Registrate
+          </Link>
         </motion.div>
       </motion.div>
     </motion.div>
